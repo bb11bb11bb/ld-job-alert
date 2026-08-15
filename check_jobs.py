@@ -26,12 +26,12 @@ BOARD_TOKEN = "liquiddeath"
 JOBS_API_URL = f"https://boards-api.greenhouse.io/v1/boards/{BOARD_TOKEN}/jobs"
 STATE_FILE = "seen_jobs.json"
 
-# Only actually send/act at 5pm US Eastern. GitHub Actions cron is UTC-only
-# and doesn't shift for daylight saving, so the workflow triggers this
-# script around 5pm ET on both a summer and winter offset, and this check
-# throws away the "wrong" run.
 TARGET_HOUR_ET = 17
-ENFORCE_TARGET_HOUR = os.environ.get("ENFORCE_TARGET_HOUR", "true").lower() == "true"
+# Only enforce the 5pm-ET gate on the automatic daily "schedule" trigger.
+# Manual runs (workflow_dispatch, e.g. clicking "Run workflow" to test)
+# should always run fully, regardless of what time it is.
+GITHUB_EVENT_NAME = os.environ.get("GITHUB_EVENT_NAME", "")
+ENFORCE_TARGET_HOUR = GITHUB_EVENT_NAME == "schedule"
 
 
 def fetch_jobs():
