@@ -33,13 +33,17 @@ jobs:
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           RECIPIENT_EMAIL: ${{ secrets.RECIPIENT_EMAIL }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
         run: python check_jobs.py
 
       - name: Commit updated job state
         run: |
           git config user.name "job-alert-bot"
           git config user.email "action@github.com"
-          git add seen_jobs.json
-          git diff --staged --quiet && echo "No state changes to commit" || git commit -m "Update seen jobs [skip ci]"
-          git push
-
+          if [ -f seen_jobs.json ]; then
+            git add seen_jobs.json
+            git diff --staged --quiet && echo "No state changes to commit" || git commit -m "Update seen jobs [skip ci]"
+            git push
+          else
+            echo "seen_jobs.json not found (run was likely skipped by the 5pm-ET gate) — nothing to commit"
+          fi
